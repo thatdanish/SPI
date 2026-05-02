@@ -2,7 +2,6 @@
 
 # Serial Peripheral Interface (SPI)
 
-
 </center>
 
 Serial Peripheral Interface (SPI) protocol establishes synchronous-serial bit transfer between *different* ICs. It follows master-slave relationship, with master sharing a clock signal with the slave IC for ensuring synchronous transfers. 
@@ -15,4 +14,8 @@ This repository contains three blocks required for implementing the SPI interfac
 
 ## Design Parameters
 
-*more to follow*
+- ### CPOL : 0
+
+Clock polarity: Shared clock (sclk) remains low under idle condition.
+
+- ### CPHA : 1
