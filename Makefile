@@ -56,3 +56,19 @@ wave_spi_slave:
 clean_spi_slave:
 	rm -rf $(VVP_SPI_SLAVE)
 	rm -rf $(VCD_SPI_SLAVE)
+
+# Target : SPI Top
+
+spi_top: compile_spi_top
+	$(SIMULATOR) $(VVP_SPI_TOP)
+
+compile_spi_top:
+	mkdir -p temp
+	$(COMPILER) $(COMPILER_FLAG2) $(COMPILER_FLAG1) $(VVP_SPI_TOP) $(SV_SPI_TOP) $(SV_SPI_MASTER) $(SV_SPI_SLAVE) $(TB_SPI_TOP)
+
+wave_spi_top:
+	gtkwave $(VCD_SPI_TOP)
+
+clean_spi_top:
+	rm -rf $(VVP_SPI_TOP)
+	rm -rf $(VCD_SPI_TOP)

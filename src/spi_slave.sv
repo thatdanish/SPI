@@ -14,11 +14,12 @@ module spi_slave #(
 );
 
 typedef enum bit[1:0] { IDLE, DATA, DATAVALID } state_t;
-logic [DWIDTH-1:0] data;
+bit [DWIDTH-1:0] data;
 state_t current_state, next_state;
-logic [5:0] counter_32;
+bit [5:0] counter_32;
 bit counter_32_indication;
 bit trigger;
+bit mosi_int;
 
 assign counter_32_indication = (counter_32 == DWIDTH-1);
 assign data_valid_o = (current_state == DATAVALID);
@@ -34,13 +35,16 @@ always_ff @( posedge s_clk_i or negedge trigger) begin
     if (!rst_i) begin
         counter_32 <= 'd0;
         data <= 'd0;
+        mosi_int <= 1'b0;
     end else begin
         if (cs_i == 1'b0) begin
-            data[counter_32] <= mosi_i;
+            mosi_int <= mosi_i;
+            data[counter_32] <= mosi_int;
             counter_32 <= (counter_32 == DWIDTH-1) ? 'd0 : counter_32 + 'd1;
         end else begin
             counter_32 <= 'd0;
             data <= 'd0;
+            mosi_int <= 1'b0;
         end 
     end
 end

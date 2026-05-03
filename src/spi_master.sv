@@ -19,13 +19,13 @@ module spi_master #(
 // assert (CPOL == 0 && CPHA == 1) 
 // else   $fatal("Only CPOL: 0 & CPHA: 1 is supported");
 
-typedef enum bit { IDLE, DATA } state_t;
+typedef enum bit[1:0] { IDLE, CHIPSEL, DATA } state_t;
 logic [5:0] counter_32;
 logic [DWIDTH-1:0] data;
 bit counter_32_indication;
 state_t current_state, next_state;
 
-assign counter_32_indication = (counter_32 == 'd31);
+assign counter_32_indication = (counter_32 == DWIDTH-1);
 assign cs_o = tx_ready_o;
 assign tx_ready_o = (current_state == IDLE);
 
@@ -36,7 +36,7 @@ always_ff @( posedge clk_i ) begin
     end else begin
         data <= (data_valid_i == 1'b1)  ? data_i : data;
         if (current_state == DATA) begin
-            counter_32 <= (counter_32 == 'd31) ? 'd0 : counter_32 + 'd1;
+            counter_32 <= (counter_32 == DWIDTH-1) ? 'd0 : counter_32 + 'd1;
         end else counter_32 <= 'd0;
     end  
 end
@@ -55,8 +55,11 @@ always_comb begin
     next_state = IDLE;
     case (current_state)
         IDLE: begin
-            if (data_valid_i == 1'b1) next_state = DATA;
+            if (data_valid_i == 1'b1) next_state = CHIPSEL;
         end 
+        CHIPSEL: begin
+            next_state = DATA;
+        end
         DATA: begin
             if (counter_32_indication == 1'b1) next_state = IDLE;
             else next_state = DATA;
@@ -71,11 +74,18 @@ always_comb begin
             s_clk_o = 1'b0;
             mosi_o = 'd0;
         end 
+        CHIPSEL: begin
+            s_clk_o = 1'b0;
+            mosi_o = 'd0;
+        end
         DATA: begin
             s_clk_o = clk_i;
             mosi_o = data[counter_32];
         end
-        default: mosi_o = 'd0;
+        default: begin 
+            mosi_o = 'd0;
+            s_clk_o = 1'b0;
+        end
     endcase   
 end
 
