@@ -19,3 +19,8 @@ This repository contains three blocks required for implementing the SPI interfac
 Clock polarity: Shared clock (sclk) remains low under idle condition.
 
 - ### CPHA : 1
+
+
+![image](image.png)
+
+    Fig 1: Transmitting and receiving two values ('d161 & 'd121) via SPI interface.

@@ -19,14 +19,14 @@ module spi_master #(
 // assert (CPOL == 0 && CPHA == 1) 
 // else   $fatal("Only CPOL: 0 & CPHA: 1 is supported");
 
-typedef enum bit[1:0] { IDLE, CHIPSEL, DATA } state_t;
+typedef enum bit[1:0] { IDLE, SCLK, DATA } state_t;
 logic [5:0] counter_32;
 logic [DWIDTH-1:0] data;
 bit counter_32_indication;
 state_t current_state, next_state;
 
 assign counter_32_indication = (counter_32 == DWIDTH-1);
-assign cs_o = tx_ready_o;
+assign cs_o = (current_state != DATA);
 assign tx_ready_o = (current_state == IDLE);
 
 always_ff @( posedge clk_i ) begin 
@@ -55,9 +55,9 @@ always_comb begin
     next_state = IDLE;
     case (current_state)
         IDLE: begin
-            if (data_valid_i == 1'b1) next_state = CHIPSEL;
+            if (data_valid_i == 1'b1) next_state = SCLK;
         end 
-        CHIPSEL: begin
+        SCLK: begin
             next_state = DATA;
         end
         DATA: begin
@@ -74,8 +74,8 @@ always_comb begin
             s_clk_o = 1'b0;
             mosi_o = 'd0;
         end 
-        CHIPSEL: begin
-            s_clk_o = 1'b0;
+        SCLK: begin
+            s_clk_o = clk_i;
             mosi_o = 'd0;
         end
         DATA: begin
